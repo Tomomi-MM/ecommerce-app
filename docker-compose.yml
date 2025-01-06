@@ -10,6 +10,7 @@ services:
       - "8000:80"
     volumes:
       - ./src:/var/www/html
+      - ./apache.conf:/etc/apache2/sites-available/000-default.conf
 
   mysql:
     image: mysql:8.0

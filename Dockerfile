@@ -1,4 +1,4 @@
-FROM php:8.2-fpm
+FROM php:8.2-apache
 
 # 必要なPHP拡張をインストール
 RUN apt-get update && apt-get install -y \
@@ -8,8 +8,17 @@ RUN apt-get update && apt-get install -y \
 # Composerのインストール
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
+# Apache モジュールの有効化
+RUN a2enmod rewrite
+
+# Node.js をインストール
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs
+
+
 # 作業ディレクトリの設定
 WORKDIR /var/www/html
+
 
 # 権限を設定
 RUN chown -R www-data:www-data /var/www/html \
