@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Cart;
-use App\Models\Product;
+use App\Models\Cart;                      // カートモデル
+use App\Models\CartItem;                  // カートアイテムモデル
+use App\Models\Product;                   // 商品モデル
+use Illuminate\Support\Facades\Auth;      // 認証情報の取得
 use Illuminate\Http\Request;
 
 class CartController extends Controller
@@ -11,30 +13,27 @@ class CartController extends Controller
     // カートの表示
     public function index()
     {
-        $cartItems = session()->get('cart', []); // セッションからカート情報を取得
+        $cart = auth()->user()->cart;
+        $cartItems = $cart ? $cart->cartItems()->with('product')->get() : [];
+
         return view('cart.index', compact('cartItems'));
     }
 
     // カートに商品を追加
     public function store(Request $request)
     {
-        $product = Product::findOrFail($request->product_id);
+        // 現在のユーザーを取得
+        $user = auth()->user();
 
-        $cart = session()->get('cart', []);
+        // カートを取得または新規作成
+        $cart = $user->cart ?? $user->cart()->create();
 
-        if (isset($cart[$product->id])) {
-            $cart[$product->id]['quantity'] += $request->quantity;
-        } else {
-            $cart[$product->id] = [
-                'name' => $product->name,
-                'price' => $product->price,
-                'quantity' => $request->quantity,
-            ];
-        }
+        // カートに商品を追加
+        $cart->cartItems()->create([
+            'product_id' => $request->input('product_id'),
+        ]);
 
-        session()->put('cart', $cart);
-
-        return redirect()->route('cart.index')->with('success', '商品をカートに追加しました！');
+        return redirect()->route('cart.index')->with('success', 'カートに商品を追加しました！');
     }
 
     // カートから商品を削除

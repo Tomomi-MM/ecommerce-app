@@ -12,14 +12,14 @@ class ProductController extends Controller
       // 商品詳細の表示
       public function show($id)
       {
-          $product = Product::findOrFail($id); // ID で商品を取得、見つからない場合は404エラー
-          return view('products.show', compact('product')); // ビューにデータを渡す
+        // 商品を取得（リレーションでカテゴリーも取得）
+        $product = Product::with('category')->findOrFail($id); // ID で商品を取得、見つからない場合は404エラー
+        return view('products.show', compact('product')); // ビューにデータを渡す
       }
 
       //商品登録フォームを表示
       public function create()
       {
-        dd('商品登録フォームが呼び出されました');
           // カテゴリーを取得してビューに渡す
           $categories = Category::all();
 
@@ -50,6 +50,6 @@ class ProductController extends Controller
         $product->category_id = $request->input('category_id');
         $product->save();
 
-        return redirect()->route('home')->with('success', '商品が保存されました。');
+        return redirect()->route('products.create')->with('success', '商品が保存されました。');
     }
 }
